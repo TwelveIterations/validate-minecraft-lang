@@ -57,7 +57,7 @@ jobs:
         id: test-action
         uses: ./
         with:
-          src: '__fixtures__'
+          rootPath: '__fixtures__'
           langFile: '__fixtures__/en_us.json'
 
       - name: Print Output
