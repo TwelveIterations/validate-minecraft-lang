@@ -21,7 +21,10 @@ export async function run(): Promise<void> {
     if (!langFile) {
       const modId = getModIdFromGradleProperties(rootPath)
       if (modId) {
-        langFile = path.join(rootPath, `common/src/main/resources/assets/${modId}/lang/en_us.json`)
+        langFile = path.join(
+          rootPath,
+          `common/src/main/resources/assets/${modId}/lang/en_us.json`
+        )
       } else {
         core.setFailed(
           'No langFile provided and could not find mod_id in gradle.properties'
@@ -33,7 +36,9 @@ export async function run(): Promise<void> {
     console.log(
       `Reading exported keys from: ${path.join(rootPath, 'fabric/build/datagen/i18n.export.json')}`
     )
-    console.log(`Scanning Java files for Component.translatable(...) in: ${rootPath}`)
+    console.log(
+      `Scanning Java files for Component.translatable(...) in: ${rootPath}`
+    )
     console.log(`Validating language file at: ${langFile}`)
 
     const result = await validateMinecraftLang(rootPath, langFile)

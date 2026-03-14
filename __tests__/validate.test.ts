@@ -60,7 +60,10 @@ describe('validateMinecraftLang', () => {
     fs.writeFileSync(path.join(rootDir, 'src', 'main', 'java', name), content)
   }
 
-  function writeLangFile(langFile: string, entries: Record<string, string>): void {
+  function writeLangFile(
+    langFile: string,
+    entries: Record<string, string>
+  ): void {
     fs.writeFileSync(langFile, JSON.stringify(entries))
   }
 
@@ -161,7 +164,10 @@ describe('validateMinecraftLang', () => {
     writeLangFile(fixture.langFile, {
       'export.only': 'Export only'
     })
-    fs.rmSync(path.join(fixture.rootDir, 'src'), { recursive: true, force: true })
+    fs.rmSync(path.join(fixture.rootDir, 'src'), {
+      recursive: true,
+      force: true
+    })
 
     try {
       const result = await validateMinecraftLang(
@@ -170,7 +176,9 @@ describe('validateMinecraftLang', () => {
       )
       expect(result).toBe(true)
       expect(consoleLogSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Found 0 Component.translatable keys in 0 Java files')
+        expect.stringContaining(
+          'Found 0 Component.translatable keys in 0 Java files'
+        )
       )
     } finally {
       fixture.cleanup()
@@ -198,7 +206,9 @@ describe('validateMinecraftLang', () => {
     try {
       await expect(
         validateMinecraftLang(fixture.rootDir, fixture.langFile)
-      ).rejects.toThrow('Export file must be a JSON array of translation key strings')
+      ).rejects.toThrow(
+        'Export file must be a JSON array of translation key strings'
+      )
     } finally {
       fixture.cleanup()
     }

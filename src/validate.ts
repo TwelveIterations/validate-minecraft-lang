@@ -2,7 +2,12 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { glob } from 'glob'
 
-const EXPORT_FILE_PATH = path.join('fabric', 'build', 'datagen', 'i18n.export.json')
+const EXPORT_FILE_PATH = path.join(
+  'fabric',
+  'build',
+  'datagen',
+  'i18n.export.json'
+)
 
 export async function validateMinecraftLang(
   rootPath: string,
@@ -63,7 +68,10 @@ function readExportedKeys(exportFile: string): Set<string> {
   const exportContent = fs.readFileSync(exportFile, 'utf-8')
   const exportData: unknown = JSON.parse(exportContent)
 
-  if (!Array.isArray(exportData) || exportData.some((entry) => typeof entry !== 'string')) {
+  if (
+    !Array.isArray(exportData) ||
+    exportData.some((entry) => typeof entry !== 'string')
+  ) {
     throw new Error(
       `Export file must be a JSON array of translation key strings: ${exportFile}`
     )

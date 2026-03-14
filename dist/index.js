@@ -39047,7 +39047,8 @@ function readExportedKeys(exportFile) {
     }
     const exportContent = fs.readFileSync(exportFile, 'utf-8');
     const exportData = JSON.parse(exportContent);
-    if (!Array.isArray(exportData) || exportData.some((entry) => typeof entry !== 'string')) {
+    if (!Array.isArray(exportData) ||
+        exportData.some((entry) => typeof entry !== 'string')) {
         throw new Error(`Export file must be a JSON array of translation key strings: ${exportFile}`);
     }
     return new Set(exportData);
