@@ -1,0 +1,25 @@
+name: 'Validate Minecraft Lang'
+description: 'Validates Minecraft language files.'
+author: Twelve Iterations
+
+branding:
+  icon: heart
+  color: red
+
+inputs:
+  rootPath:
+    description: 'Root path of the repository'
+    required: false
+    default: '.'
+  langFile:
+    description: 'Path to the language file, will be inferred if not provided'
+    required: false
+    default: ''
+
+outputs:
+  success:
+    description: 'Whether the validation was successful'
+
+runs:
+  using: node20
+  main: dist/index.js
