@@ -212,9 +212,7 @@ describe('validateMinecraftLang', () => {
       )
       expect(result).toBe(true)
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'Export file not found, skipping exported keys'
-        )
+        expect.stringContaining('Export file not found, skipping exported keys')
       )
       expect(consoleLogSpy).toHaveBeenCalledWith(
         expect.stringContaining('Found 0 translation keys in')

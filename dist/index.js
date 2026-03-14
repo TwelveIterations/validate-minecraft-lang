@@ -39043,7 +39043,8 @@ async function validateMinecraftLang(rootPath, langFile) {
 }
 function readExportedKeys(exportFile) {
     if (!fs.existsSync(exportFile)) {
-        throw new Error(`Export file not found: ${exportFile}`);
+        console.warn(`Export file not found, skipping exported keys: ${exportFile}`);
+        return new Set();
     }
     const exportContent = fs.readFileSync(exportFile, 'utf-8');
     const exportData = JSON.parse(exportContent);
@@ -39092,7 +39093,7 @@ async function run() {
                 return;
             }
         }
-        console.log(`Reading exported keys from: ${path$1.join(rootPath, 'fabric/build/datagen/i18n.export.json')}`);
+        console.log(`Checking for exported keys at: ${path$1.join(rootPath, 'fabric/build/datagen/i18n.export.json')}`);
         console.log(`Scanning Java files for Component.translatable(...) in: ${rootPath}`);
         console.log(`Validating language file at: ${langFile}`);
         const result = await validateMinecraftLang(rootPath, langFile);
