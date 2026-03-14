@@ -12,9 +12,10 @@
 uses: TwelveIterations/validate-minecraft-lang@v1
 ```
 
-This action requires `fabric/build/datagen/i18n.export.json` to exist in the
-repository root passed via `rootPath`. The export file must be a JSON array of
-translation key strings.
+This action optionally reads `fabric/build/datagen/i18n.export.json` from the
+repository root passed via `rootPath`. If present, the export file must be a
+JSON array of translation key strings. If it is missing, the action logs a
+warning and validates only Java `Component.translatable(...)` lookups.
 
 Validation combines:
 

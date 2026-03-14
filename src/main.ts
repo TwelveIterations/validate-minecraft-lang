@@ -34,7 +34,7 @@ export async function run(): Promise<void> {
     }
 
     console.log(
-      `Reading exported keys from: ${path.join(rootPath, 'fabric/build/datagen/i18n.export.json')}`
+      `Checking for exported keys at: ${path.join(rootPath, 'fabric/build/datagen/i18n.export.json')}`
     )
     console.log(
       `Scanning Java files for Component.translatable(...) in: ${rootPath}`

@@ -62,7 +62,8 @@ export async function validateMinecraftLang(
 
 function readExportedKeys(exportFile: string): Set<string> {
   if (!fs.existsSync(exportFile)) {
-    throw new Error(`Export file not found: ${exportFile}`)
+    console.warn(`Export file not found, skipping exported keys: ${exportFile}`)
+    return new Set()
   }
 
   const exportContent = fs.readFileSync(exportFile, 'utf-8')

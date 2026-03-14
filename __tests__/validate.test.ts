@@ -19,15 +19,18 @@ const FIXTURES_DIR = path.join(__dirname, '..', '__fixtures__')
 describe('validateMinecraftLang', () => {
   let consoleLogSpy: SpiedFunction<typeof console.log>
   let consoleErrorSpy: SpiedFunction<typeof console.error>
+  let consoleWarnSpy: SpiedFunction<typeof console.warn>
 
   beforeEach(() => {
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
   })
 
   afterEach(() => {
     consoleLogSpy.mockRestore()
     consoleErrorSpy.mockRestore()
+    consoleWarnSpy.mockRestore()
   })
 
   function createFixtureProject(name: string): {
@@ -185,14 +188,37 @@ describe('validateMinecraftLang', () => {
     }
   })
 
-  it('throws when the export file is missing', async () => {
+  it('logs a warning and continues when the export file is missing', async () => {
     const fixture = createFixtureProject('temp_missing_export_file')
-    writeLangFile(fixture.langFile, {})
+    writeJavaFile(
+      fixture.rootDir,
+      'Test.java',
+      `
+      public class Test {
+        void test() {
+          Component.translatable("java.only");
+        }
+      }
+      `
+    )
+    writeLangFile(fixture.langFile, {
+      'java.only': 'Java only'
+    })
 
     try {
-      await expect(
-        validateMinecraftLang(fixture.rootDir, fixture.langFile)
-      ).rejects.toThrow('Export file not found')
+      const result = await validateMinecraftLang(
+        fixture.rootDir,
+        fixture.langFile
+      )
+      expect(result).toBe(true)
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Export file not found, skipping exported keys'
+        )
+      )
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Found 0 translation keys in')
+      )
     } finally {
       fixture.cleanup()
     }
