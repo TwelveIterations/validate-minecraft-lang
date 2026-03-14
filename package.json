@@ -38,7 +38,7 @@
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^3.0.0",
-    "glob": "^10.3.10"
+    "glob": "^13.0.6"
   },
   "devDependencies": {
     "@eslint/compat": "^2.0.3",
