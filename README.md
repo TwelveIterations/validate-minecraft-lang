@@ -22,6 +22,11 @@ Validation combines:
 - keys from `fabric/build/datagen/i18n.export.json`
 - simple Java `Component.translatable(...)` lookups
 
+If translation keys are missing, the action only fails when the missing key is
+clearly mod-specific based on the resolved `mod_id` from `gradle.properties`.
+Missing keys without that mod id are reported as warnings and do not fail the
+build.
+
 ## Development
 
 After you've cloned the repository to your local machine or codespace, you'll

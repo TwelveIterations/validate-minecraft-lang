@@ -94,9 +94,14 @@ describe('validateMinecraftLang', () => {
     try {
       const result = await validateMinecraftLang(
         fixture.rootDir,
-        fixture.langFile
+        fixture.langFile,
+        'examplemod'
       )
-      expect(result).toBe(true)
+      expect(result).toEqual({
+        success: true,
+        missingErrorKeys: [],
+        missingWarningKeys: []
+      })
       expect(consoleLogSpy).toHaveBeenCalledWith(
         expect.stringContaining('Found 2 translation keys in')
       )
@@ -111,9 +116,9 @@ describe('validateMinecraftLang', () => {
     }
   })
 
-  it('returns false when export file keys are missing from lang file', async () => {
+  it('returns false when export file keys missing from lang file match the mod id segment', async () => {
     const fixture = createFixtureProject('temp_missing_export_keys')
-    writeExportFile(fixture.rootDir, ['export.only', 'missing.export'])
+    writeExportFile(fixture.rootDir, ['export.only', 'block.examplemod.board'])
     writeLangFile(fixture.langFile, {
       'export.only': 'Export only'
     })
@@ -121,19 +126,24 @@ describe('validateMinecraftLang', () => {
     try {
       const result = await validateMinecraftLang(
         fixture.rootDir,
-        fixture.langFile
+        fixture.langFile,
+        'examplemod'
       )
-      expect(result).toBe(false)
+      expect(result).toEqual({
+        success: false,
+        missingErrorKeys: ['block.examplemod.board'],
+        missingWarningKeys: []
+      })
       expect(consoleLogSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Missing translation keys')
+        expect.stringContaining('Error-level missing translation keys')
       )
-      expect(consoleLogSpy).toHaveBeenCalledWith('  - missing.export')
+      expect(consoleLogSpy).toHaveBeenCalledWith('  - block.examplemod.board')
     } finally {
       fixture.cleanup()
     }
   })
 
-  it('returns false when Component.translatable keys are missing from lang file', async () => {
+  it('returns false when Component.translatable keys missing from lang file match the mod id segment', async () => {
     const fixture = createFixtureProject('temp_missing_java_keys')
     writeExportFile(fixture.rootDir, [])
     writeJavaFile(
@@ -142,7 +152,7 @@ describe('validateMinecraftLang', () => {
       `
       public class Test {
         void test() {
-          Component.translatable("missing.java");
+          Component.translatable("gui.examplemod.title");
         }
       }
       `
@@ -152,10 +162,15 @@ describe('validateMinecraftLang', () => {
     try {
       const result = await validateMinecraftLang(
         fixture.rootDir,
-        fixture.langFile
+        fixture.langFile,
+        'examplemod'
       )
-      expect(result).toBe(false)
-      expect(consoleLogSpy).toHaveBeenCalledWith('  - missing.java')
+      expect(result).toEqual({
+        success: false,
+        missingErrorKeys: ['gui.examplemod.title'],
+        missingWarningKeys: []
+      })
+      expect(consoleLogSpy).toHaveBeenCalledWith('  - gui.examplemod.title')
     } finally {
       fixture.cleanup()
     }
@@ -175,9 +190,10 @@ describe('validateMinecraftLang', () => {
     try {
       const result = await validateMinecraftLang(
         fixture.rootDir,
-        fixture.langFile
+        fixture.langFile,
+        'examplemod'
       )
-      expect(result).toBe(true)
+      expect(result.success).toBe(true)
       expect(consoleLogSpy).toHaveBeenCalledWith(
         expect.stringContaining(
           'Found 0 Component.translatable keys in 0 Java files'
@@ -208,9 +224,10 @@ describe('validateMinecraftLang', () => {
     try {
       const result = await validateMinecraftLang(
         fixture.rootDir,
-        fixture.langFile
+        fixture.langFile,
+        'examplemod'
       )
-      expect(result).toBe(true)
+      expect(result.success).toBe(true)
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining('Export file not found, skipping exported keys')
       )
@@ -229,7 +246,7 @@ describe('validateMinecraftLang', () => {
 
     try {
       await expect(
-        validateMinecraftLang(fixture.rootDir, fixture.langFile)
+        validateMinecraftLang(fixture.rootDir, fixture.langFile, 'examplemod')
       ).rejects.toThrow(
         'Export file must be a JSON array of translation key strings'
       )
@@ -246,7 +263,8 @@ describe('validateMinecraftLang', () => {
       await expect(
         validateMinecraftLang(
           fixture.rootDir,
-          path.join(fixture.rootDir, 'lang', 'missing.json')
+          path.join(fixture.rootDir, 'lang', 'missing.json'),
+          'examplemod'
         )
       ).rejects.toThrow('Language file not found')
     } finally {
@@ -285,13 +303,93 @@ describe('validateMinecraftLang', () => {
     try {
       const result = await validateMinecraftLang(
         fixture.rootDir,
-        fixture.langFile
+        fixture.langFile,
+        'examplemod'
       )
-      expect(result).toBe(true)
+      expect(result.success).toBe(true)
       expect(consoleLogSpy).toHaveBeenCalledWith(
         expect.stringContaining('Found 4 Component.translatable keys')
       )
       expect(consoleLogSpy).not.toHaveBeenCalledWith('  - literal.text')
+    } finally {
+      fixture.cleanup()
+    }
+  })
+
+  it('returns warnings without failing when missing keys do not match the mod id segment', async () => {
+    const fixture = createFixtureProject('temp_missing_warning_keys')
+    writeExportFile(fixture.rootDir, ['shared.key'])
+    writeJavaFile(
+      fixture.rootDir,
+      'Test.java',
+      `
+      public class Test {
+        void test() {
+          Component.translatable("tooltip.library.entry");
+        }
+      }
+      `
+    )
+    writeLangFile(fixture.langFile, {})
+
+    try {
+      const result = await validateMinecraftLang(
+        fixture.rootDir,
+        fixture.langFile,
+        'examplemod'
+      )
+      expect(result).toEqual({
+        success: true,
+        missingErrorKeys: [],
+        missingWarningKeys: ['shared.key', 'tooltip.library.entry']
+      })
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Warning-level missing translation keys')
+      )
+      expect(consoleLogSpy).toHaveBeenCalledWith('  - shared.key')
+      expect(consoleLogSpy).toHaveBeenCalledWith('  - tooltip.library.entry')
+    } finally {
+      fixture.cleanup()
+    }
+  })
+
+  it('treats substring-only mod id matches as warnings', async () => {
+    const fixture = createFixtureProject('temp_substring_only_keys')
+    writeExportFile(fixture.rootDir, ['block.examplemodboard.name'])
+    writeLangFile(fixture.langFile, {})
+
+    try {
+      const result = await validateMinecraftLang(
+        fixture.rootDir,
+        fixture.langFile,
+        'examplemod'
+      )
+      expect(result).toEqual({
+        success: true,
+        missingErrorKeys: [],
+        missingWarningKeys: ['block.examplemodboard.name']
+      })
+    } finally {
+      fixture.cleanup()
+    }
+  })
+
+  it('treats all missing keys as warnings when mod id is unavailable', async () => {
+    const fixture = createFixtureProject('temp_missing_mod_id')
+    writeExportFile(fixture.rootDir, ['block.examplemod.board'])
+    writeLangFile(fixture.langFile, {})
+
+    try {
+      const result = await validateMinecraftLang(
+        fixture.rootDir,
+        fixture.langFile,
+        null
+      )
+      expect(result).toEqual({
+        success: true,
+        missingErrorKeys: [],
+        missingWarningKeys: ['block.examplemod.board']
+      })
     } finally {
       fixture.cleanup()
     }

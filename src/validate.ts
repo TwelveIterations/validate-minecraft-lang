@@ -9,10 +9,17 @@ const EXPORT_FILE_PATH = path.join(
   'i18n.export.json'
 )
 
+export interface ValidationResult {
+  success: boolean
+  missingErrorKeys: string[]
+  missingWarningKeys: string[]
+}
+
 export async function validateMinecraftLang(
   rootPath: string,
-  langFile: string
-): Promise<boolean> {
+  langFile: string,
+  modId: string | null
+): Promise<ValidationResult> {
   try {
     const exportFile = path.join(rootPath, EXPORT_FILE_PATH)
     const exportedKeys = readExportedKeys(exportFile)
@@ -38,6 +45,12 @@ export async function validateMinecraftLang(
     const missingKeys = Array.from(requiredKeys).filter(
       (key) => !availableKeys.has(key)
     )
+    const missingErrorKeys = missingKeys.filter((key) =>
+      isModSpecificKey(key, modId)
+    )
+    const missingWarningKeys = missingKeys.filter(
+      (key) => !isModSpecificKey(key, modId)
+    )
 
     console.log(`Found ${exportedKeys.size} translation keys in ${exportFile}`)
     console.log(
@@ -46,14 +59,25 @@ export async function validateMinecraftLang(
     console.log(`Found ${requiredKeys.size} total required translation keys`)
     console.log(`Found ${availableKeys.size} keys in ${langFile}`)
 
-    if (missingKeys.length > 0) {
-      console.log('\nMissing translation keys:')
-      missingKeys.forEach((key) => console.log(`  - ${key}`))
-      return false
+    if (missingWarningKeys.length > 0) {
+      console.log('\nWarning-level missing translation keys:')
+      missingWarningKeys.forEach((key) => console.log(`  - ${key}`))
     }
 
-    console.log('\nAll translation keys found!')
-    return true
+    if (missingErrorKeys.length > 0) {
+      console.log('\nError-level missing translation keys:')
+      missingErrorKeys.forEach((key) => console.log(`  - ${key}`))
+    }
+
+    if (missingKeys.length === 0) {
+      console.log('\nAll translation keys found!')
+    }
+
+    return {
+      success: missingErrorKeys.length === 0,
+      missingErrorKeys,
+      missingWarningKeys
+    }
   } catch (error) {
     console.error('Error during validation:', error)
     throw error
@@ -96,4 +120,12 @@ function extractTranslatableKeys(content: string): string[] {
   }
 
   return keys
+}
+
+function isModSpecificKey(key: string, modId: string | null): boolean {
+  if (!modId) {
+    return false
+  }
+
+  return key.split('.').includes(modId)
 }

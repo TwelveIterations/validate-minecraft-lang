@@ -17,9 +17,9 @@ export async function run(): Promise<void> {
   try {
     // Get inputs from GitHub Action
     const rootPath = core.getInput('rootPath', { required: false }) || '.'
+    const modId = getModIdFromGradleProperties(rootPath)
     let langFile = core.getInput('langFile', { required: false })
     if (!langFile) {
-      const modId = getModIdFromGradleProperties(rootPath)
       if (modId) {
         langFile = path.join(
           rootPath,
@@ -40,12 +40,15 @@ export async function run(): Promise<void> {
       `Scanning Java files for Component.translatable(...) in: ${rootPath}`
     )
     console.log(`Validating language file at: ${langFile}`)
+    console.log(`Using mod id for severity classification: ${modId ?? 'none'}`)
 
-    const result = await validateMinecraftLang(rootPath, langFile)
-    core.setOutput('success', result)
+    const result = await validateMinecraftLang(rootPath, langFile, modId)
+    core.setOutput('success', result.success)
 
-    if (!result) {
-      core.setFailed('Validation failed: Some translation keys are missing')
+    if (!result.success) {
+      core.setFailed(
+        'Validation failed: Some mod-specific translation keys are missing'
+      )
     }
   } catch (error) {
     // Fail the workflow run if an error occurs
